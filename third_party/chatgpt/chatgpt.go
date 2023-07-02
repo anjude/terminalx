@@ -18,20 +18,17 @@ func Chat(msg string, dialog []openai.ChatCompletionMessage) []openai.ChatComple
 		fmt.Println(err)
 		return dialog
 	}
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyUrl),
-	}
 	clientConfig.HTTPClient = &http.Client{
-		Transport: transport,
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		},
 	}
-
 	client := openai.NewClientWithConfig(clientConfig)
 
 	dialog = append(dialog, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
 		Content: msg,
 	})
-
 	ctx := context.Background()
 	stream, err := client.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
 		Model:     openai.GPT3Dot5Turbo,
@@ -49,7 +46,6 @@ func Chat(msg string, dialog []openai.ChatCompletionMessage) []openai.ChatComple
 	fmt.Printf("bot: ")
 	for {
 		response, err := stream.Recv()
-
 		if errors.Is(err, io.EOF) {
 			fmt.Println()
 			dialog = append(dialog, openai.ChatCompletionMessage{

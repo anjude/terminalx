@@ -8,6 +8,7 @@ import (
 	"github.com/anjude/terminalx/handler/version"
 )
 
+// OptionMap 在这里维护指令集
 var OptionMap = map[string]base.IHandler{
 	"-h": Handler{
 		Command: "-h",
