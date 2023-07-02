@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/anjude/terminalx/config"
+	"github.com/anjude/terminalx/third_party/sizhi"
 	"github.com/sashabaranov/go-openai"
 	"io"
 	"net/http"
@@ -37,8 +38,9 @@ func Chat(msg string, dialog []openai.ChatCompletionMessage) []openai.ChatComple
 		Messages:  dialog,
 	})
 	if err != nil {
-		fmt.Println(err)
-		return dialog
+		sizhiMsg, _ := sizhi.GetSizhiMsg(msg, openai.ChatMessageRoleUser)
+		fmt.Println("ChatGPT报错，切换小思: ", sizhiMsg)
+		return getReturn(dialog, sizhiMsg)
 	}
 	defer stream.Close()
 
@@ -47,16 +49,7 @@ func Chat(msg string, dialog []openai.ChatCompletionMessage) []openai.ChatComple
 	for {
 		response, err := stream.Recv()
 		if errors.Is(err, io.EOF) {
-			fmt.Println()
-			dialog = append(dialog, openai.ChatCompletionMessage{
-				Role:    openai.ChatMessageRoleAssistant,
-				Content: answer,
-			})
-			chatRounds := config.BotConf.ChatGPT.ChatRounds
-			if len(dialog) >= chatRounds {
-				dialog = dialog[len(dialog)-chatRounds:]
-			}
-			return dialog
+			return getReturn(dialog, answer)
 		}
 		if err != nil {
 			fmt.Println(err)
@@ -66,4 +59,17 @@ func Chat(msg string, dialog []openai.ChatCompletionMessage) []openai.ChatComple
 		answer += content
 		fmt.Printf(content)
 	}
+}
+
+func getReturn(dialog []openai.ChatCompletionMessage, answer string) []openai.ChatCompletionMessage {
+
+	dialog = append(dialog, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleAssistant,
+		Content: answer,
+	})
+	chatRounds := config.BotConf.ChatGPT.ChatRounds
+	if len(dialog) >= chatRounds {
+		dialog = dialog[len(dialog)-chatRounds:]
+	}
+	return dialog
 }

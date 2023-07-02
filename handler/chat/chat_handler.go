@@ -34,13 +34,13 @@ func (c Handler) GetArgs(args []string) (curArgs []string, nextArgs []string) {
 
 func (c Handler) Handle(args []string) {
 	var dialog []openai.ChatCompletionMessage
-	fmt.Println(`[input "quit" to exit]`)
+	fmt.Println(`[Please enter 'quit' to exit or enter any other input to continue the conversation.]`)
 	if len(args) != 0 {
 		dialog = chatgpt.Chat(args[0], dialog)
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		fmt.Print("> ")
+		fmt.Print("\n> ")
 		scanner.Scan()
 		text := scanner.Text()
 		if text == "quit" {
