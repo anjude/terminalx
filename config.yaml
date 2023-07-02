@@ -1,0 +1,7 @@
+# 填写自己的api-key和proxy，把文件放到 ~/.terminal/config.yaml路径(~是用户目录，cd ~)
+chatGPTConfig:
+  apiKey: "your-api-key"
+  chatRounds: 6 # 上下文条数
+  proxy: "http://127.0.0.1:7890"
+
+version: v0.0.1
