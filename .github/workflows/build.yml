@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+    - name: Build for Windows
+      run: GOOS=windows GOARCH=amd64 go build -o myapp.exe main.go
+    - name: Build for macOS
+      run: GOOS=darwin GOARCH=amd64 go build -o myapp_macos main.go
+    - name: Build for Linux
+      run: GOOS=linux GOARCH=amd64 go build -o myapp_linux main.go
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: myapp
+        path: |
+          ./myapp.exe
+          ./myapp_macos
+          ./myapp_linux
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: myapp
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          This is the release of myapp for tag ${{ github.ref }}.
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset for Windows
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./myapp.exe
+        asset_name: myapp.exe
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset for macOS
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./myapp_macos
+        asset_name: myapp_macos
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset for Linux
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./myapp_linux
+        asset_name: myapp_linux
+        asset_content_type: application/octet-stream
