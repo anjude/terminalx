@@ -15,11 +15,11 @@ jobs:
       with:
         go-version: 1.16
     - name: Build for Windows
-      run: GOOS=windows GOARCH=amd64 go build -o myapp.exe main.go
+      run: go mod tidy && GOOS=windows GOARCH=amd64 go build -o myapp.exe main.go
     - name: Build for macOS
-      run: GOOS=darwin GOARCH=amd64 go build -o myapp_macos main.go
+      run: go mod tidy && GOOS=darwin GOARCH=amd64 go build -o myapp_macos main.go
     - name: Build for Linux
-      run: GOOS=linux GOARCH=amd64 go build -o myapp_linux main.go
+      run: go mod tidy && GOOS=linux GOARCH=amd64 go build -o myapp_linux main.go
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
